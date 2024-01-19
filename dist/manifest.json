@@ -6,9 +6,9 @@
   "author": "Ustym Ukhman",
   "orientation": "portrait",
 
-  "name": "Three.js Boilerplate",
-  "short_name": "Three.js Boilerplate",
-  "description": "Three.js + TypeScript + SolidJS + Vite + Vitest",
+  "name": "Three Havok",
+  "short_name": "Three Havok",
+  "description": "Havok physics engine with three.js",
 
   "prefer_related_applications": false,
   "background_color": "#222222",

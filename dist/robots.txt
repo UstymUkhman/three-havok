@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://ustymukhman.github.io/threejs-boilerplate/dist/sitemap.xml
+Sitemap: https://ustymukhman.github.io/three-havok/dist/sitemap.xml

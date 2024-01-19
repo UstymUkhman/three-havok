@@ -1,19 +1,19 @@
 {
-  "name": "threejs-boilerplate",
-  "description": "Three.js + TypeScript + SolidJS + Vite + Vitest",
-  "homepage": "https://github.com/UstymUkhman/threejs-boilerplate#readme",
-  "packageManager": "^pnpm@8.4.0",
+  "name": "three-havok",
+  "description": "Havok physics engine with three.js",
+  "homepage": "https://github.com/UstymUkhman/three-havok#readme",
+  "packageManager": "^pnpm@8.14.1",
   "main": "src/main.tsx",
-  "version": "4.0.0",
+  "version": "0.0.1",
   "license": "MIT",
   "private": false,
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/UstymUkhman/threejs-boilerplate.git"
+    "url": "https://github.com/UstymUkhman/three-havok.git"
   },
   "bugs": {
-    "url": "https://github.com/UstymUkhman/threejs-boilerplate/issues",
+    "url": "https://github.com/UstymUkhman/three-havok/issues",
     "email": "ustym.ukhman@gmail.com"
   },
   "author": {
@@ -22,16 +22,14 @@
     "url": "https://github.com/UstymUkhman/"
   },
   "keywords": [
-    "vite",
-    "webgl",
-    "webgl2",
-    "threejs",
-    "solidjs",
-    "template",
-    "boilerplate",
+    "havok",
+    "physics",
+    "havok-physics",
+    "physics-engine",
     "typescript",
-    "vitest",
-    "pnpm"
+    "threejs",
+    "vite",
+    "demo"
   ],
   "scripts": {
     "start": "vite",
@@ -75,6 +73,6 @@
   },
   "engines": {
     "node": ">= 18.12.1",
-    "pnpm": ">= 8.4.0"
+    "pnpm": ">= 8.14.1"
   }
 }

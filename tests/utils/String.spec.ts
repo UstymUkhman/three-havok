@@ -3,14 +3,14 @@ import { capitalize, camelCase } from '@/utils/String';
 
 describe('String', () => {
   test('capitalize', () => {
-    const name = 'three.js boilerplate';
-    const capitalized = 'Three.js boilerplate';
+    const name = 'three havok';
+    const capitalized = 'Three havok';
     expect(capitalize(name)).toStrictEqual(capitalized);
   });
 
   test('camelCase', () => {
-    const name = 'Three JS Boilerplate';
-    const camelCased = 'threeJsBoilerplate';
+    const name = 'Three Havok';
+    const camelCased = 'threeHavok';
     expect(camelCase(name)).toStrictEqual(camelCased);
   });
 });
