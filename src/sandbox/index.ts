@@ -16,6 +16,7 @@ import { PCFSoftShadowMap } from 'three/src/constants';
 import type { Vector3 } from 'three/src/math/Vector3';
 import GroundMaterial from '@/sandbox/GroundMaterial';
 
+import HavokPhysics from '@/sandbox/HavokPhysics';
 import { DoubleSide } from 'three/src/constants';
 import GUIControls from '@/sandbox/GUIControls';
 import { Scene } from 'three/src/scenes/Scene';
@@ -42,6 +43,7 @@ export default class Sandbox
   private guiControls!: GUIControls;
   private renderer!: WebGLRenderer;
   private ambient!: AmbientLight;
+  private physics!: HavokPhysics;
 
   private ground!: Mesh;
   private stats?: Stats;
@@ -51,13 +53,11 @@ export default class Sandbox
     this.createCamera();
     this.createLights();
     this.createGround();
+    this.createPhysics();
 
     this.createRenderer();
     this.createControls();
     this.createStats();
-
-    RAF.add(this.update);
-    RAF.pause = false;
   }
 
   private createScene (): void {
@@ -97,6 +97,16 @@ export default class Sandbox
     this.ground.receiveShadow = true;
     this.ground.rotateX(-PI.d2);
     this.scene.add(this.ground);
+  }
+
+  private createPhysics (): void {
+    this.physics = new HavokPhysics();
+
+    this.physics.initialize().then(() => {
+      // this.physics.createBox(this.ground, 'static', new Vector3());
+      RAF.add(this.update);
+      RAF.pause = false;
+    });
   }
 
   private createRenderer (): void {
@@ -153,6 +163,7 @@ export default class Sandbox
   private render (): void {
     this.stats?.begin();
 
+    this.physics.update();
     this.orbitControls.update();
     this.renderer.render(this.scene, this.camera);
     this.guiControls.update(this.camera.position, this.orbitControls.target);
