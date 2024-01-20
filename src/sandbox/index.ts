@@ -162,15 +162,15 @@ export default class Sandbox
   }
 
   private createRenderer (): void {
-    const { toneMappingExposure, outputColorSpace, background, toneMapping } = Config.Scene;
+    const { toneMappingExposure, outputEncoding, background, toneMapping } = Config.Scene;
     this.renderer = new WebGLRenderer({ powerPreference: 'high-performance', antialias: true });
 
     this.renderer.setSize(Viewport.size.width, Viewport.size.height);
     this.renderer.debug.checkShaderErrors = import.meta.env.DEV;
     this.renderer.toneMappingExposure = toneMappingExposure;
 
-    this.renderer.outputColorSpace = outputColorSpace;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
+    this.renderer.outputEncoding = outputEncoding;
     this.renderer.setPixelRatio(devicePixelRatio);
 
     this.renderer.setClearColor(background, 1.0);
@@ -293,7 +293,7 @@ export default class Sandbox
 
   public updateRenderer (scene: typeof Config.Scene): void {
     this.renderer.toneMappingExposure = scene.toneMappingExposure;
-    this.renderer.outputColorSpace = scene.outputColorSpace;
+    this.renderer.outputEncoding = scene.outputEncoding;
     this.renderer.toneMapping = scene.toneMapping;
   }
 

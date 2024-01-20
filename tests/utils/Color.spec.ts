@@ -4,7 +4,7 @@ import { blend, getRGB, getHex, getInt, random } from '@/utils/Color';
 
 describe('Color', () => {
   const gray = { r: 0.5, g: 0.5, b: 0.5 };
-  const lightGray = new Color(0xbbbbbb).convertLinearToSRGB();
+  const lightGray = new Color(0xbbbbbb);
 
   test('blend', () => {
     expect(blend({ r: 0, g: 0, b: 0 }, gray, 0)).toStrictEqual('#000000');
