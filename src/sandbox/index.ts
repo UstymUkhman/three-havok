@@ -2,26 +2,30 @@ import type { MeshStandardMaterial } from 'three/src/materials/MeshStandardMater
 import { DirectionalLightHelper } from 'three/src/helpers/DirectionalLightHelper';
 import type { MeshBasicMaterial } from 'three/src/materials/MeshBasicMaterial';
 import type { MeshToonMaterial } from 'three/src/materials/MeshToonMaterial';
+import { MeshPhongMaterial } from 'three/src/materials/MeshPhongMaterial';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { PerspectiveCamera } from 'three/src/cameras/PerspectiveCamera';
 import { DirectionalLight } from 'three/src/lights/DirectionalLight';
 import { PlaneGeometry } from 'three/src/geometries/PlaneGeometry';
 import { WebGLRenderer } from 'three/src/renderers/WebGLRenderer';
+import { InstancedMesh } from 'three/src/objects/InstancedMesh';
+import { BoxGeometry } from 'three/src/geometries/BoxGeometry';
 
 import type { Material } from 'three/src/materials/Material';
 import { AmbientLight } from 'three/src/lights/AmbientLight';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import type { Object3D } from 'three/src/core/Object3D';
 import { PCFSoftShadowMap } from 'three/src/constants';
-import type { Vector3 } from 'three/src/math/Vector3';
 import GroundMaterial from '@/sandbox/GroundMaterial';
 
 import HavokPhysics from '@/sandbox/HavokPhysics';
-import { DoubleSide } from 'three/src/constants';
+import { Vector3 } from 'three/src/math/Vector3';
+import { FrontSide } from 'three/src/constants';
 import GUIControls from '@/sandbox/GUIControls';
 import { Scene } from 'three/src/scenes/Scene';
 import { Mesh } from 'three/src/objects/Mesh';
 import { Color } from 'three/src/math/Color';
+import { Euler } from 'three/src/math/Euler';
 
 import { Fog } from 'three/src/scenes/Fog';
 import { Config } from '@/sandbox/Config';
@@ -91,7 +95,7 @@ export default class Sandbox
 
     this.ground = new Mesh(
       new PlaneGeometry(size, size),
-      new GroundMaterial({ side: DoubleSide, color })
+      new GroundMaterial({ side: FrontSide, color })
     );
 
     this.ground.receiveShadow = true;
@@ -103,10 +107,58 @@ export default class Sandbox
     this.physics = new HavokPhysics();
 
     this.physics.initialize().then(() => {
-      // this.physics.createBox(this.ground, 'static', new Vector3());
+      const { size } = Config.Ground;
+
+      this.physics.createObject(
+        this.ground,
+        new Euler(),
+        new Vector3(size, 0.1, size)
+      );
+
+      this.createBoxes(10.0);
+
       RAF.add(this.update);
       RAF.pause = false;
     });
+  }
+
+  private createBoxes (count: number): void {
+    const size = 2.0;
+    const boxes = new InstancedMesh(
+      new BoxGeometry(size, size, size),
+      new MeshPhongMaterial({
+        color: new Color(1.0, 1.0, 1.0),
+        side: FrontSide
+      }),
+      count
+    );
+
+    for (let b = count; b--; ) {
+      boxes.setColorAt(b, new Color(
+        Math.random(),
+        Math.random(),
+        Math.random()
+      ));
+
+      this.physics.createInstancedObject(
+        boxes,
+        new Vector3(
+          Math.random() * 50 - 25,
+          Math.random() * 100 + 50,
+          Math.random() * 50 - 25
+        ),
+        new Euler(
+          Math.random() * PI.m2,
+          Math.random() * PI.m2,
+          Math.random() * PI.m2
+        ),
+        new Vector3(size, size, size)
+      );
+    }
+
+    boxes.receiveShadow = true;
+    boxes.castShadow = true;
+    this.scene.add(boxes);
   }
 
   private createRenderer (): void {
