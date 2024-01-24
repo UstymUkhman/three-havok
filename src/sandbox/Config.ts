@@ -25,7 +25,7 @@ export namespace Config
 
   export const Camera = {
     position: new Vector3(0.0, 25.0, 50.0),
-    target: new Vector3(0.0, 0.0, -25.0),
+    target: new Vector3(0.0, 6.0, 0.0),
     fov: 50.0,
     near: 0.1,
     far: 500.0

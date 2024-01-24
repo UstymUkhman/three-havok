@@ -115,46 +115,52 @@ export default class Sandbox
         new Vector3(size, 0.1, size)
       );
 
-      this.createBoxes(10.0);
+      this.createBoxes();
 
       RAF.add(this.update);
       RAF.pause = false;
     });
   }
 
-  private createBoxes (count: number): void {
-    const size = 2.0;
-    const boxes = new InstancedMesh(
-      new BoxGeometry(size, size, size),
-      new MeshPhongMaterial({
-        color: new Color(1.0, 1.0, 1.0),
-        side: FrontSide
-      }),
-      count
-    );
+  private createBoxes (): void {
+    const
+      size = 2,
+      width = 6,
+      depth = 6,
+      height = 10,
+      halfSize = size * 0.5,
+      halfWidth = halfSize * width - halfSize,
+      halfDepth = halfSize * depth - halfSize,
 
-    for (let b = count; b--; ) {
-      boxes.setColorAt(b, new Color(
-        Math.random(),
-        Math.random(),
-        Math.random()
-      ));
-
-      this.physics.createInstancedObject(
-        boxes,
-        new Vector3(
-          Math.random() * 50 - 25,
-          Math.random() * 100 + 50,
-          Math.random() * 50 - 25
-        ),
-        new Euler(
-          Math.random() * PI.m2,
-          Math.random() * PI.m2,
-          Math.random() * PI.m2
-        ),
-        new Vector3(size, size, size)
+      boxes = new InstancedMesh(
+        new BoxGeometry(size, size, size),
+        new MeshPhongMaterial({
+          color: new Color(1.0, 1.0, 1.0),
+          side: FrontSide
+        }),
+        height * depth * width
       );
-    }
+
+    for (let b = 0, h = 0; h < height; h++)
+      for (let d = 0; d < depth; d++)
+        for (let w = 0; w < width; w++, b++) {
+          boxes.setColorAt(b, new Color(
+            Math.random(),
+            Math.random(),
+            Math.random()
+          ));
+
+          this.physics.createInstancedObject(
+            boxes,
+            new Vector3(
+              w * size - halfWidth,
+              h * size + halfSize,
+              d * size - halfDepth
+            ),
+            undefined,
+            new Vector3(size, size, size)
+          );
+        }
 
     boxes.receiveShadow = true;
     boxes.castShadow = true;
