@@ -6,6 +6,7 @@ import { MeshPhongMaterial } from 'three/src/materials/MeshPhongMaterial';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { PerspectiveCamera } from 'three/src/cameras/PerspectiveCamera';
 import { DirectionalLight } from 'three/src/lights/DirectionalLight';
+import { SphereGeometry } from 'three/src/geometries/SphereGeometry';
 import { PlaneGeometry } from 'three/src/geometries/PlaneGeometry';
 import { WebGLRenderer } from 'three/src/renderers/WebGLRenderer';
 import { InstancedMesh } from 'three/src/objects/InstancedMesh';
@@ -30,6 +31,7 @@ import { Euler } from 'three/src/math/Euler';
 import { Fog } from 'three/src/scenes/Fog';
 import { Config } from '@/sandbox/Config';
 import Viewport from '@/utils/Viewport';
+import { random } from '@/utils/Color';
 import { PI } from '@/utils/Number';
 import RAF from '@/utils/RAF';
 
@@ -109,11 +111,25 @@ export default class Sandbox
     this.physics.initialize().then(() => {
       const { size } = Config.Ground;
 
-      this.physics.createObject(
+      this.physics.createBox(
         this.ground,
         new Euler(),
         new Vector3(size, 0.1, size)
       );
+
+      const sphere = new Mesh(
+        new SphereGeometry(4),
+        new MeshPhongMaterial({
+          color: random()
+        })
+      );
+
+      sphere.position.y = 35;
+      this.physics.createSphere(sphere);
+
+      sphere.receiveShadow = true;
+      sphere.castShadow = true;
+      this.scene.add(sphere);
 
       this.createBoxes();
 
@@ -135,7 +151,7 @@ export default class Sandbox
       boxes = new InstancedMesh(
         new BoxGeometry(size, size, size),
         new MeshPhongMaterial({
-          color: new Color(1.0, 1.0, 1.0),
+          color: new Color(),
           side: FrontSide
         }),
         height * depth * width
@@ -144,13 +160,9 @@ export default class Sandbox
     for (let b = 0, h = 0; h < height; h++)
       for (let d = 0; d < depth; d++)
         for (let w = 0; w < width; w++, b++) {
-          boxes.setColorAt(b, new Color(
-            Math.random(),
-            Math.random(),
-            Math.random()
-          ));
+          boxes.setColorAt(b, new Color(random()));
 
-          this.physics.createInstancedObject(
+          this.physics.createInstancedBox(
             boxes,
             new Vector3(
               w * size - halfWidth,

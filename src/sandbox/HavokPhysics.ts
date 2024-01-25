@@ -1,6 +1,7 @@
+type PhysicsObject = PhysicsInstancedObject & { mesh: Mesh, static: boolean };
+import type { SphereGeometry } from 'three/src/geometries/SphereGeometry';
 import type { InstancedMesh } from 'three/src/objects/InstancedMesh';
 type PhysicsInstancedObject = { offset: number, body: bigint[] };
-type PhysicsObject = PhysicsInstancedObject & { mesh: Mesh };
 
 import { Quaternion } from 'three/src/math/Quaternion';
 import type { Mesh } from 'three/src/objects/Mesh';
@@ -31,7 +32,7 @@ export default class HavokPhysics
     this.engine.HP_World_SetGravity(this.world, GRAVITY.toArray());
   }
 
-  private createBody (
+  private createBoxBody (
     position: Vector3,
     rotation: Euler,
     scale: Vector3,
@@ -56,17 +57,16 @@ export default class HavokPhysics
     return { offset, body };
   }
 
-  public createObject (
+  public createBox (
     mesh: Mesh,
     rotation = EULER_ONE,
     scale = VECTOR_ONE,
     type = 'static'
   ): void {
-    // mesh.matrixAutoUpdate = false;
-
     this.objects.push({
       mesh,
-      ...this.createBody(
+      static: type === 'static',
+      ...this.createBoxBody(
         mesh.position,
         new Euler(
           mesh.rotation.x * rotation.x,
@@ -83,7 +83,7 @@ export default class HavokPhysics
     });
   }
 
-  public createInstancedObject (
+  public createInstancedBox (
     mesh: InstancedMesh,
     position = VECTOR_ZERO,
     rotation = EULER_ZERO,
@@ -91,10 +91,38 @@ export default class HavokPhysics
     type = 'dynamic'
   ): void {
     const instancedObjects = this.instancedObjects.get(mesh) ?? [];
-    instancedObjects.push(this.createBody(position, rotation, scale, type));
+    instancedObjects.push(this.createBoxBody(position, rotation, scale, type));
 
-    this.instancedArray = new Float32Array(mesh.count * 16.0);
+    this.instancedArray = new Float32Array(mesh.count * 16);
     this.instancedObjects.set(mesh, instancedObjects);
+  }
+
+  public createSphere (mesh: Mesh): void {
+    const body = this.engine.HP_Body_Create()[1];
+    const qRotation = new Quaternion().setFromEuler(mesh.rotation);
+
+    this.engine.HP_Body_SetShape(body, this.engine.HP_Shape_CreateSphere(
+      [0, 0, 0], (mesh.geometry as SphereGeometry).parameters.radius
+    )[1]);
+
+    this.engine.HP_Body_SetQTransform(body, [
+      [mesh.position.x, mesh.position.y, mesh.position.z],
+      [qRotation.x, qRotation.y, qRotation.z, qRotation.w]
+    ]);
+
+    this.engine.HP_World_AddBody(this.world, body, false);
+    const offset = this.engine.HP_Body_GetWorldTransformOffset(body)[1];
+    this.engine.HP_Body_SetMotionType(body, this.engine.MotionType['DYNAMIC']);
+
+    const massProperties = this.engine.HP_Body_GetMassProperties(body)[1];
+
+    // massProperties[0]: Array(3) - Center of mass, relative to the body
+    massProperties[1] = 1e3;    // - Actual body mass
+    // massProperties[2]: Array(3) - Inertia
+    // massProperties[3]: Array(4) - Inertia orientation
+
+    this.engine.HP_Body_SetMassProperties(body, massProperties);
+    this.objects.push({ mesh, offset, body, static: false });
   }
 
   public update (): void {
@@ -116,6 +144,13 @@ export default class HavokPhysics
         object.mesh.matrix.elements[i] = transformBuffer[i];
 
       // object.mesh.matrix.elements[15] = 1.0;
+
+      if (object.static) continue;
+
+      const transform = this.engine.HP_Body_GetQTransform(object.body)[1];
+
+      object.mesh.quaternion.fromArray(transform[1]);
+      object.mesh.position.fromArray(transform[0]);
     }
 
     this.instancedObjects.forEach((objects, mesh) => {
