@@ -1,4 +1,4 @@
-type PhysicsObject = PhysicsInstancedObject & { mesh: Mesh, static: boolean };
+type PhysicsObject = PhysicsInstancedObject & { mesh: Mesh, dynamic: boolean };
 import type { SphereGeometry } from 'three/src/geometries/SphereGeometry';
 import type { InstancedMesh } from 'three/src/objects/InstancedMesh';
 type PhysicsInstancedObject = { offset: number, body: bigint[] };
@@ -57,30 +57,72 @@ export default class HavokPhysics
     return { offset, body };
   }
 
+  private updateBodyMaterial (
+    body: bigint[],
+    restitution: number,
+    staticFriction?: number,
+    dynamicFriction = staticFriction
+  ): this {
+    const shape = this.engine.HP_Body_GetShape(body)[1];
+    const material = this.engine.HP_Shape_GetMaterial(shape)[1];
+
+    if (staticFriction) material[0] = staticFriction;
+    if (dynamicFriction) material[1] = dynamicFriction;
+
+    material[2] = restitution;
+
+    // material[3]: keyof typeof this.engine.MaterialCombine - Friction combine
+    // material[4]: keyof typeof this.engine.MaterialCombine - Friction combine
+
+    this.engine.HP_Shape_SetMaterial(shape, material);
+
+    return this;
+  }
+
+  private updateBodyMass (
+    body: bigint[],
+    mass: number
+  ): this {
+    const massProperties = this.engine.HP_Body_GetMassProperties(body)[1];
+
+    // massProperties[0]: Array(3) - Center of mass, relative to the body
+    massProperties[1] = mass;   // - Actual body mass
+    // massProperties[2]: Array(3) - Inertia
+    // massProperties[3]: Array(4) - Inertia orientation
+
+    this.engine.HP_Body_SetMassProperties(body, massProperties);
+
+    return this;
+  }
+
   public createBox (
     mesh: Mesh,
     rotation = EULER_ONE,
     scale = VECTOR_ONE,
     type = 'static'
   ): void {
-    this.objects.push({
-      mesh,
-      static: type === 'static',
-      ...this.createBoxBody(
-        mesh.position,
-        new Euler(
-          mesh.rotation.x * rotation.x,
-          mesh.rotation.y * rotation.y,
-          mesh.rotation.z * rotation.z
-        ),
-        new Vector3(
-          mesh.scale.x * scale.x,
-          mesh.scale.y * scale.y,
-          mesh.scale.z * scale.z
-        ),
-        type
-      )
-    });
+    const dynamic = type !== 'static';
+
+    const boxBody = this.createBoxBody(
+      mesh.position,
+      new Euler(
+        mesh.rotation.x * rotation.x,
+        mesh.rotation.y * rotation.y,
+        mesh.rotation.z * rotation.z
+      ),
+      new Vector3(
+        mesh.scale.x * scale.x,
+        mesh.scale.y * scale.y,
+        mesh.scale.z * scale.z
+      ),
+      type
+    );
+
+    this
+      .updateBodyMass(boxBody.body, 10)
+      .updateBodyMaterial(boxBody.body, 0.75, 1);
+
+    this.objects.push({ mesh, dynamic, ...boxBody });
   }
 
   public createInstancedBox (
@@ -98,7 +140,7 @@ export default class HavokPhysics
   }
 
   public createSphere (mesh: Mesh): void {
-    const body = this.engine.HP_Body_Create()[1];
+    const body: bigint[] = this.engine.HP_Body_Create()[1];
     const qRotation = new Quaternion().setFromEuler(mesh.rotation);
 
     this.engine.HP_Body_SetShape(body, this.engine.HP_Shape_CreateSphere(
@@ -114,15 +156,8 @@ export default class HavokPhysics
     const offset = this.engine.HP_Body_GetWorldTransformOffset(body)[1];
     this.engine.HP_Body_SetMotionType(body, this.engine.MotionType['DYNAMIC']);
 
-    const massProperties = this.engine.HP_Body_GetMassProperties(body)[1];
-
-    // massProperties[0]: Array(3) - Center of mass, relative to the body
-    massProperties[1] = 1e3;    // - Actual body mass
-    // massProperties[2]: Array(3) - Inertia
-    // massProperties[3]: Array(4) - Inertia orientation
-
-    this.engine.HP_Body_SetMassProperties(body, massProperties);
-    this.objects.push({ mesh, offset, body, static: false });
+    this.updateBodyMaterial(body, 0.75).updateBodyMass(body, 1e3);
+    this.objects.push({ mesh, offset, body, dynamic: true });
   }
 
   public update (): void {
@@ -145,7 +180,7 @@ export default class HavokPhysics
 
       // object.mesh.matrix.elements[15] = 1.0;
 
-      if (object.static) continue;
+      if (!object.dynamic) continue;
 
       const transform = this.engine.HP_Body_GetQTransform(object.body)[1];
 
