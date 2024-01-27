@@ -6,7 +6,7 @@
 ![](https://img.shields.io/github/package-json/v/UstymUkhman/three-havok?color=orange&style=flat-square)
 ![](https://img.shields.io/github/license/UstymUkhman/three-havok?color=lightgrey&style=flat-square)
 
-<!-- [![](./public/assets/images/preview.jpg)](https://ustymukhman.github.io/three-havok/dist) -->
+[![](./public/assets/images/preview.jpg)](https://ustymukhman.github.io/three-havok/dist)
 
 ## Download ##
 
