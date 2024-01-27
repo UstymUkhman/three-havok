@@ -1,3 +1,0 @@
-// Vitest Snapshot v1
-
-exports[`<Logo /> > Render 1`] = `"<div class=\\"_logo_f7d212\\"><img alt=\\"Three\\" src=\\"/src/assets/images/logo.png\\"><h1>Three Havok</h1></div>"`;

@@ -26,14 +26,6 @@
 
 `pnpm lint:css`
 
-## Test ##
-
-`pnpm test`
-
-`pnpm test:watch`
-
-`pnpm test:cover`
-
 ## Build ##
 
 `pnpm build`

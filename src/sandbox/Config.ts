@@ -24,7 +24,7 @@ export namespace Config
   };
 
   export const Camera = {
-    position: new Vector3(0.0, 25.0, 50.0),
+    position: new Vector3(0.0, 35.0, 70.0),
     target: new Vector3(0.0, 6.0, 0.0),
     fov: 50.0,
     near: 0.1,
@@ -38,8 +38,8 @@ export namespace Config
     },
 
     directional: {
-      position: new Vector3(-15.0, 25.0, 50.0),
-      rotation: new Euler(0.785, 0.0, 0.25),
+      position: new Vector3(0.0, 35.0, 70.0),
+      rotation: new Euler(1.0, 0.0, 0.0),
       color: Color.NAMES.white,
       intensity: 1.0,
 
@@ -48,12 +48,12 @@ export namespace Config
         cast: true,
 
         camera: {
-          bottom: -25.0,
-          right: 25.0,
-          left: -25.0,
+          bottom: -50.0,
+          right: 100.0,
+          left: -100.0,
+          far: 200.0,
           near: 1.0,
-          far: 50.0,
-          top: 15.0
+          top: 60.0
         }
       },
 
@@ -68,7 +68,7 @@ export namespace Config
   export const Ground = {
     color: Color.NAMES.white,
     size: 500.0,
-    cell: 26.0
+    cell: 50.0
   };
 
   export const Fog = {

@@ -72,7 +72,7 @@ export default class HavokPhysics
     material[2] = restitution;
 
     // material[3]: keyof typeof this.engine.MaterialCombine - Friction combine
-    // material[4]: keyof typeof this.engine.MaterialCombine - Friction combine
+    // material[4]: keyof typeof this.engine.MaterialCombine - Restitution combine
 
     this.engine.HP_Shape_SetMaterial(shape, material);
 
@@ -178,8 +178,6 @@ export default class HavokPhysics
       for (let i = 0; i < 15; i++) if ((i & 3) !== 3)
         object.mesh.matrix.elements[i] = transformBuffer[i];
 
-      // object.mesh.matrix.elements[15] = 1.0;
-
       if (!object.dynamic) continue;
 
       const transform = this.engine.HP_Body_GetQTransform(object.body)[1];
@@ -189,12 +187,10 @@ export default class HavokPhysics
     }
 
     this.instancedObjects.forEach((objects, mesh) => {
-      // const { array } = mesh.instanceMatrix;
       this.instancedArray.set(mesh.instanceMatrix.array);
 
       for (let o = objects.length; o--; ) {
-        const offset = 16.0 * o;
-        const object = objects[o];
+        const object = objects[o], offset = o * 16.0;
 
         const transformBuffer = new Float32Array(
           this.engine.HEAPU8.buffer,
@@ -206,12 +202,6 @@ export default class HavokPhysics
           this.instancedArray[offset + i] = transformBuffer[i];
 
         mesh.instanceMatrix.copyArray(this.instancedArray);
-
-        // for (let i = 0; i < 15; i++) if ((i & 3) !== 3)
-        //   array[offset + i] = transformBuffer[i];
-
-        // this.instancedArray[offset + 15] = 1.0;
-        // array[offset + 15] = 1.0;
       }
 
       mesh.instanceMatrix.needsUpdate = true;

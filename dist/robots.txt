@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://ustymukhman.github.io/three-havok/dist/sitemap.xml

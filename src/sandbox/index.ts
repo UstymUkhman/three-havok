@@ -22,7 +22,6 @@ import GroundMaterial from '@/sandbox/GroundMaterial';
 import HavokPhysics from '@/sandbox/HavokPhysics';
 import { Vector3 } from 'three/src/math/Vector3';
 import { FrontSide } from 'three/src/constants';
-import GUIControls from '@/sandbox/GUIControls';
 import { Scene } from 'three/src/scenes/Scene';
 import { Mesh } from 'three/src/objects/Mesh';
 import { Color } from 'three/src/math/Color';
@@ -37,7 +36,6 @@ import RAF from '@/utils/RAF';
 
 export default class Sandbox
 {
-  private readonly groundSize = Config.Ground.size;
   private readonly update = this.render.bind(this);
 
   private helper!: DirectionalLightHelper;
@@ -46,7 +44,6 @@ export default class Sandbox
   private readonly scene = new Scene();
 
   private camera!: PerspectiveCamera;
-  private guiControls!: GUIControls;
   private renderer!: WebGLRenderer;
   private ambient!: AmbientLight;
   private physics!: HavokPhysics;
@@ -117,6 +114,8 @@ export default class Sandbox
         new Vector3(size, 0.1, size)
       );
 
+      this.createBoxes();
+
       const sphere = new Mesh(
         new SphereGeometry(4),
         new MeshPhongMaterial({
@@ -124,14 +123,12 @@ export default class Sandbox
         })
       );
 
-      sphere.position.y = 35;
+      sphere.position.y = 50;
       this.physics.createSphere(sphere);
 
       sphere.receiveShadow = true;
       sphere.castShadow = true;
       this.scene.add(sphere);
-
-      this.createBoxes();
 
       RAF.add(this.update);
       RAF.pause = false;
@@ -199,18 +196,11 @@ export default class Sandbox
   private createControls (): void {
     this.orbitControls = new OrbitControls(this.camera, this.canvas);
     this.orbitControls.target.copy(Config.Camera.target);
-
-    this.orbitControls.enablePan = import.meta.env.DEV;
     Viewport.addResizeCallback(this.resize.bind(this));
 
-    this.guiControls = new GUIControls(this);
-    this.orbitControls.enableDamping = true;
-
-    this.orbitControls.maxPolarAngle = 1.5;
-    this.orbitControls.minPolarAngle = 0.5;
-
-    this.orbitControls.rotateSpeed = 0.5;
-    this.orbitControls.enableZoom = true;
+    this.orbitControls.autoRotateSpeed = -5;
+    this.orbitControls.autoRotate = true;
+    this.orbitControls.enabled = false;
 
     this.orbitControls.update();
   }
@@ -220,6 +210,8 @@ export default class Sandbox
       this.stats = new Stats();
       this.stats.showPanel(0);
       this.stats.dom.id = 'stats';
+      this.stats.dom.style.right = '0';
+      this.stats.dom.style.left = 'auto';
       document.body.appendChild(this.stats.dom);
     }
   }
@@ -236,7 +228,6 @@ export default class Sandbox
     this.physics.update();
     this.orbitControls.update();
     this.renderer.render(this.scene, this.camera);
-    this.guiControls.update(this.camera.position, this.orbitControls.target);
 
     this.stats?.end();
   }
@@ -244,7 +235,6 @@ export default class Sandbox
   public dispose (): void {
     this.disposeNode(this.scene);
     this.orbitControls.dispose();
-    this.guiControls.dispose();
     this.stats?.dom.remove();
 
     RAF.remove(this.update);
@@ -300,40 +290,6 @@ export default class Sandbox
     this.renderer?.setClearColor(color, 1.0);
   }
 
-  public set controls (enabled: boolean) {
-    this.orbitControls.enabled = enabled;
-  }
-
-  public set pause (paused: boolean) {
-    this.controls = !paused;
-    RAF.pause = paused;
-  }
-
-  public updateRenderer (scene: typeof Config.Scene): void {
-    this.renderer.toneMappingExposure = scene.toneMappingExposure;
-    this.renderer.outputEncoding = scene.outputEncoding;
-    this.renderer.toneMapping = scene.toneMapping;
-  }
-
-  public updateCamera (camera: typeof Config.Camera): void {
-    const { fov, near, far } = camera;
-    this.camera.fov = fov;
-    this.camera.near = near;
-    this.camera.far = far;
-    this.camera.updateProjectionMatrix();
-  }
-
-  public updateCameraPosition (position: Vector3, target: Vector3): void {
-    this.orbitControls.target.copy(target);
-    this.camera.position.copy(position);
-  }
-
-  public updateAmbient (ambient: typeof Config.Lights.ambient): void {
-    const { color, intensity } = ambient;
-    this.ambient.intensity = intensity;
-    this.ambient.color.set(color);
-  }
-
   public updateDirectional (directional: typeof Config.Lights.directional): void {
     const { bottom, right, left, top, near, far } = directional.shadow.camera;
     const { color, intensity, position, rotation, shadow } = directional;
@@ -354,13 +310,6 @@ export default class Sandbox
     this.directional.rotation.copy(rotation);
     this.directional.intensity = intensity;
     this.directional.color.set(color);
-  }
-
-  public updateGround (ground: typeof Config.Ground): void {
-    const { color, size, cell } = ground;
-    (this.ground.material as GroundMaterial).color.set(color);
-    (this.ground.material as GroundMaterial).cell = cell;
-    this.ground.scale.setScalar(size / this.groundSize);
   }
 
   public updateFog (fog: typeof Config.Fog): void {

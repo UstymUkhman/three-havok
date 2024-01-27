@@ -1,11 +1,9 @@
-import './App.scss';
 import Sandbox from '@/sandbox';
 import type { AppProps } from './types.d';
 import { Logo, Version } from '@/components';
 import { createSignal, onCleanup } from 'solid-js';
 
-export const App = ({ root }: AppProps) =>
-{
+export const App = ({ root }: AppProps) => {
   const sandbox = new Sandbox();
   const [logo, hideLogo] = createSignal(true);
 
