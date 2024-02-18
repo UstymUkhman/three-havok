@@ -1,6 +1,6 @@
 import type { MeshPhongMaterialParameters } from 'three/src/materials/MeshPhongMaterial';
+import type { ShaderLibShader } from 'three/src/renderers/shaders/ShaderLib';
 import { MeshPhongMaterial } from 'three/src/materials/MeshPhongMaterial';
-import type { Shader } from 'three/src/renderers/shaders/ShaderLib';
 
 import parsVert from '@/shaders/ground/pars.vert';
 import mainVert from '@/shaders/ground/main.vert';
@@ -18,7 +18,7 @@ export default class GroundMaterial extends MeshPhongMaterial
     this.setValues(parameters);
   }
 
-  private updateDefaultVertexShader (shader: Shader): void {
+  private updateDefaultVertexShader (shader: ShaderLibShader): void {
     shader.vertexShader = `${parsVert}
     ${shader.vertexShader.replace(
       'void main() {',
@@ -27,15 +27,15 @@ export default class GroundMaterial extends MeshPhongMaterial
     )}`;
   }
 
-  private updateDefaultFragmentShader (shader: Shader): void {
+  private updateDefaultFragmentShader (shader: ShaderLibShader): void {
     shader.fragmentShader = `${parsFrag}
     ${shader.fragmentShader.replace(
-      '#include <output_fragment>', `
+      '#include <opaque_fragment>', `
       ${mainFrag}`
     )}`;
   }
 
-  public override onBeforeCompile (shader: Shader) {
+  public override onBeforeCompile (shader: ShaderLibShader) {
     shader.uniforms.cellSize = this.cellSize;
 
     this.updateDefaultFragmentShader(shader);

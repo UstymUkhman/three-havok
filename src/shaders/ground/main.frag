@@ -5,4 +5,4 @@ vec3 pattern = vec3(0.8 + 0.2 * mod(
 ));
 
 outgoingLight = outgoingLight * pattern;
-#include <output_fragment>
+#include <opaque_fragment>

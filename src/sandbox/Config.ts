@@ -1,6 +1,6 @@
 import {
-  sRGBEncoding,
-  LinearEncoding,
+  SRGBColorSpace,
+  type ColorSpace,
   type ToneMapping,
   ACESFilmicToneMapping
 } from 'three/src/constants';
@@ -10,15 +10,11 @@ import { Euler } from 'three/src/math/Euler';
 import { Vector3 } from 'three/src/math/Vector3';
 import { Vector2 } from 'three/src/math/Vector2';
 
-type OutputEncoding =
-  typeof sRGBEncoding |
-  typeof LinearEncoding;
-
 export namespace Config
 {
   export const Scene = {
     toneMapping: ACESFilmicToneMapping as ToneMapping,
-    outputEncoding: LinearEncoding as OutputEncoding,
+    outputColorSpace: SRGBColorSpace as ColorSpace,
     background: Color.NAMES.whitesmoke,
     toneMappingExposure: 1.5
   };
@@ -34,14 +30,14 @@ export namespace Config
   export const Lights = {
     ambient: {
       color: Color.NAMES.white,
-      intensity: 0.25
+      intensity: 0.5
     },
 
     directional: {
       position: new Vector3(0.0, 35.0, 70.0),
       rotation: new Euler(1.0, 0.0, 0.0),
       color: Color.NAMES.white,
-      intensity: 1.0,
+      intensity: 2.0,
 
       shadow: {
         mapSize: new Vector2(1024.0, 1024.0),
